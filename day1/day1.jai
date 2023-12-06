@@ -13,6 +13,7 @@ calibration_value :: (line: string, use_words: bool = false) -> int {
             if begins_with(line, sprint("%", digit)) || (use_words && begins_with(line, digit_names[it])) {
                 if start == 0 start = digit;
                 end = digit;
+                break;
             }
         }
         advance(*line);
