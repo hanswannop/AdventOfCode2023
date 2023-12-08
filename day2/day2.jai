@@ -3,42 +3,43 @@
 #import "File";
 #import "Text_File_Handler";
 
-CubeGroup :: struct {
-    count:  int;
-    color:  string;
-}
-
-game_possible :: (line: string) -> bool {
-    r_cubes := 12;
-    g_cubes := 13;
-    b_cubes := 14;
+game_possible_power :: (line: string) -> bool, int {
+    r_cubes :: 12;
+    g_cubes :: 13;
+    b_cubes :: 14;
+    r_max := 0;
+    g_max := 0;
+    b_max := 0;
     while !begins_with(line, ":") advance(*line);
     advance(*line);
     advance(*line);
     // Multiple splits as below is most certainly not optimal
-    games := split(line, "; ");
-    for games {
-        sets := split(it, ", ");
-        for sets {
-            cubes := split(it, " ");
-            if cubes[1] == "red" && to_integer(cubes[0]) > r_cubes return false;
-            if cubes[1] == "green" && to_integer(cubes[0]) > g_cubes return false;
-            if cubes[1] == "blue" && to_integer(cubes[0]) > b_cubes return false;
+    sets := split(line, "; ");
+    for sets {
+        tuples := split(it, ", ");
+        for tuples {
+            tuple := split(it, " ");
+            if tuple[1] == "red" r_max = max(r_max, to_integer(tuple[0]));
+            else if tuple[1] == "green" g_max = max(g_max, to_integer(tuple[0]));
+            else if tuple[1] == "blue" b_max = max(b_max, to_integer(tuple[0]));
         }
     }
-    return true;
+    return r_max <= r_cubes && g_max <= g_cubes && b_max <= b_cubes, r_max*g_max*b_max;
 }
 
 main :: () {
     args  := get_command_line_arguments();
     input :=  read_entire_file(args[1]);
-    sum := 0;
+    sum_possible := 0;
+    sum_power := 0;
     game_id := 1;
     while true {
         line, found := consume_next_line(*input);
         if !found break;
-        if game_possible(line) sum += game_id;
+        possible, power := game_possible_power(line);
+        if possible sum_possible += game_id;
+        sum_power += power;
         game_id += 1;
     }
-    print("Sum: %\n", sum);
+    print("Sum Possible: %, Sum Power: %\n", sum_possible, sum_power);
 }
